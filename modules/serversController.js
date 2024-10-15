@@ -91,9 +91,9 @@ exports.startServer = (serverName) => {
         if (startProps !== false) {
             // Создаём spawn и добавляем хэндлеры
             if (startProps.spawnArgs.length === 1) {
-                serversInstances[serverName] = spawn(startProps.spawnArgs[0]);
+                serversInstances[serverName] = spawn(`"${startProps.spawnArgs[0]}"`, {shell: true});
             } else if (startProps.spawnArgs.length === 2) {
-                serversInstances[serverName] = spawn(startProps.spawnArgs[0], startProps.spawnArgs[1]);
+                serversInstances[serverName] = spawn(`"${startProps.spawnArgs[0]}"`, startProps.spawnArgs[1], {shell: true});
             } else {
                 return false;
             }
@@ -242,7 +242,11 @@ exports.getServerProperties = (serverName) => {
     let spFilePath = "./servers/" + serverName + "/server.properties";
     if (fs.existsSync(spFilePath)) {
         let spFileData = fs.readFileSync(spFilePath).toString();
-        return spParser.parse(spFileData);
+        let parsed = spParser.parse(spFileData);
+        if(parsed['generator-settings']){
+            parsed['generator-settings'] = JSON.stringify(parsed['generator-settings']);
+        }
+        return parsed;
     }
     return false;
 };
